@@ -132,7 +132,12 @@ export function App() {
   }, [errorMessage, errorNonce]);
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value });
+    // Efface l'erreur du champ des que l'utilisateur le corrige.
+    if (errors[name]) {
+      setErrors((current) => ({ ...current, [name]: undefined }));
+    }
   };
 
   const showError = (message) => {

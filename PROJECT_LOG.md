@@ -3,6 +3,26 @@
 Journal de bord chronologique (entrée la plus récente en haut), en complément de
 `git log`.
 
+## 2026-06-18 — Étape C livrée, audit des tests et durcissement ciblé
+
+- **En ligne et fonctionnel** : back sur Vercel, front sur GitHub Pages, MySQL de prod
+  sur **Aiven** (TLS), images front et back publiées sur **Docker Hub**, couverture sur
+  **Codecov**. Pipeline CI/CD verte (tests + infra + e2e + déploiements). `rendu.txt`
+  rempli (6 liens, tous 200). Admin seedé sur Aiven (`loise.fenoll@ynov.com`).
+- **UI / UX** : thème « retro-diner » (inspiré du projet breakfast-battle), tableau admin
+  responsive (scroll horizontal), **confirmation de suppression** + **toast vert de
+  succès**, message clair sur email déjà inscrit (409).
+- **Couverture 100 %** back ET front (UT + IT + cas happy/sad/edge).
+- **Audit multi-agents des tests** (5 dimensions, 42 findings dédupliqués). Décisions,
+  vu qu'il s'agit d'un devoir déjà conforme :
+  - **Retenu (corrigé + testé)** : règle des **18 ans imposée côté serveur** (défense en
+    profondeur, contournable avant), **effacement de l'erreur de champ à la correction**
+    (bug UX), **`max_length`** sur les champs (évite un 500 DataError).
+  - **Dette assumée (documentée, non traitée)** : e2e plus « honnêtes » (parcours admin,
+    stratégie offline réelle, doublon email en e2e), sécurité CI (Gitleaks/CodeQL/
+    dependency-review), smoke test post-déploiement, garde JWT `sub`/`exp`, rate-limiting
+    login, a11y (aria), normalisation email, `extra='forbid'`. Hors périmètre note.
+
 ## 2026-06-18 — Étapes A et B : app dockerisée + tests
 
 - **Étape A (PR #2, mergée)** : app full-stack dockerisée. Backend FastAPI partagé

@@ -8,7 +8,7 @@ entree invalide renvoie 422. `InscritPublic` est la projection publique (liste r
 import re
 from datetime import date
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, Field, field_validator
 
 _NAME_RE = re.compile(r"^[A-Za-zÀ-ÖØ-öø-ÿ' -]+$")
 _EMAIL_RE = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
@@ -18,11 +18,11 @@ _POSTAL_RE = re.compile(r"^\d{5}$")
 class InscritCreate(BaseModel):
     """Corps du POST /inscrits (memes cles que l'etat du formulaire React)."""
 
-    nom: str
-    prenom: str
-    email: str
+    nom: str = Field(max_length=100)
+    prenom: str = Field(max_length=100)
+    email: str = Field(max_length=255)
     dateNaissance: str
-    ville: str
+    ville: str = Field(max_length=100)
     codePostal: str
 
     @field_validator("nom", "prenom", "ville")
@@ -50,9 +50,15 @@ class InscritCreate(BaseModel):
     @classmethod
     def _valid_date(cls, value: str) -> str:
         try:
-            date.fromisoformat(value)
+            birth = date.fromisoformat(value)
         except (ValueError, TypeError):
             raise ValueError("date invalide")
+        # Defense en profondeur : la regle des 18 ans (et un plafond plausible de
+        # 120 ans) est imposee cote serveur, pas seulement cote front.
+        today = date.today()
+        age = today.year - birth.year - ((today.month, today.day) < (birth.month, birth.day))
+        if age < 18 or age > 120:
+            raise ValueError("age hors bornes (18 a 120 ans)")
         return value
 
 

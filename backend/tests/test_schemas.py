@@ -1,9 +1,20 @@
 """Tests unitaires de validation des schemas Pydantic (defense en profondeur)."""
 
+from datetime import date
+
 import pytest
 from pydantic import ValidationError
 
 from app.schemas import InscritCreate
+
+
+def _iso_years_ago(years):
+    """Renvoie une date ISO situee `years` ans avant aujourd'hui."""
+    today = date.today()
+    try:
+        return today.replace(year=today.year - years).isoformat()
+    except ValueError:  # 29 fevrier -> annee cible non bissextile
+        return today.replace(year=today.year - years, day=28).isoformat()
 
 VALID = {
     "nom": "Curie",
@@ -96,3 +107,37 @@ def test_inscrit_create_rejects_missing_field():
 def test_inscrit_create_rejects_empty_string(field):
     with pytest.raises(ValidationError):
         InscritCreate(**{**VALID, field: ""})
+
+
+# --- Regle metier : 18 ans imposee cote serveur (defense en profondeur) ---
+def test_inscrit_create_accepts_exactly_18_years_old():
+    InscritCreate(**{**VALID, "dateNaissance": _iso_years_ago(18)})
+
+
+def test_inscrit_create_rejects_minor():
+    with pytest.raises(ValidationError):
+        InscritCreate(**{**VALID, "dateNaissance": _iso_years_ago(10)})
+
+
+def test_inscrit_create_rejects_future_birthdate():
+    today = date.today()
+    future = today.replace(year=today.year + 1).isoformat()
+    with pytest.raises(ValidationError):
+        InscritCreate(**{**VALID, "dateNaissance": future})
+
+
+def test_inscrit_create_rejects_implausibly_old():
+    with pytest.raises(ValidationError):
+        InscritCreate(**{**VALID, "dateNaissance": "1850-01-01"})
+
+
+# --- Robustesse : longueurs max (evite un 500 DataError cote base) ---
+@pytest.mark.parametrize("field", ["nom", "prenom", "ville"])
+def test_inscrit_create_rejects_over_length_name(field):
+    with pytest.raises(ValidationError):
+        InscritCreate(**{**VALID, field: "A" * 101})
+
+
+def test_inscrit_create_rejects_over_length_email():
+    with pytest.raises(ValidationError):
+        InscritCreate(**{**VALID, "email": "a" * 250 + "@example.com"})

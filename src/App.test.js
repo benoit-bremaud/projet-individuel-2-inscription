@@ -232,6 +232,20 @@ describe('sad path', () => {
       expect(toast).toHaveTextContent(/déjà inscrit/i);
     });
 
+    test('clears a field error as soon as the user corrects it', async () => {
+      await renderApp();
+      fillFormWithInvalidValues();
+
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: /s'inscrire/i }));
+      });
+      expect(screen.getByText('Nom invalide')).toBeInTheDocument();
+
+      fireEvent.change(screen.getByLabelText('Nom'), { target: { value: 'Bremaud' } });
+
+      expect(screen.queryByText('Nom invalide')).not.toBeInTheDocument();
+    });
+
     test('keeps the count at 0 when the mount fetch fails', async () => {
       fetchRegistrants.mockRejectedValueOnce(new Error('Network Error'));
 
