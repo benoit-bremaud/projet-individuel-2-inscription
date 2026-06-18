@@ -17,6 +17,13 @@ jobs:
           node-version: 20.x
       - run: npm ci
       - run: npm test
+      - name: Couverture front -> Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/lcov.info
+          flags: frontend
+          fail_ci_if_error: false
 
   # 2) Tests unitaires + d'integration du back (pytest contre un MySQL de test).
   back-tests:
@@ -41,7 +48,14 @@ jobs:
         working-directory: backend
         env:
           TEST_MYSQL_PASSWORD: ci-test-password
-        run: pytest --cov=app --cov-report=term-missing
+        run: pytest --cov=app --cov-report=term-missing --cov-report=xml
+      - name: Couverture back -> Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: backend/coverage.xml
+          flags: backend
+          fail_ci_if_error: false
 
   # 3) Environnement Docker + tests d'infra + e2e Cypress (online puis offline).
   e2e:
@@ -125,3 +139,29 @@ jobs:
           path: build
       - id: deployment
         uses: actions/deploy-pages@v4
+
+  # 6) Publication des images Docker (front + back) sur Docker Hub (push main).
+  publish-images:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: e2e
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Image backend -> Docker Hub
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker-mysql/api/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/projet-ind-2-inscription-backend:latest
+      - name: Image frontend -> Docker Hub
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker-mysql/webapp/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/projet-ind-2-inscription-frontend:latest
