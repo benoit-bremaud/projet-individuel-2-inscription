@@ -1,0 +1,127 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # 1) Tests unitaires + d'integration du front (Jest + couverture).
+  front-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+      - run: npm ci
+      - run: npm test
+
+  # 2) Tests unitaires + d'integration du back (pytest contre un MySQL de test).
+  back-tests:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:9.7
+        env:
+          MYSQL_ROOT_PASSWORD: ci-test-password
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r backend/app/requirements-dev.txt
+      - name: pytest (UT + IT)
+        working-directory: backend
+        env:
+          TEST_MYSQL_PASSWORD: ci-test-password
+        run: pytest --cov=app --cov-report=term-missing
+
+  # 3) Environnement Docker + tests d'infra + e2e Cypress (online puis offline).
+  e2e:
+    runs-on: ubuntu-latest
+    needs: [front-tests, back-tests]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fichier .env de la stack (valeurs de CI, pas de secret)
+        working-directory: docker-mysql
+        run: |
+          cat > .env <<'EOF'
+          MYSQL_ROOT_PASSWORD=ci-test-password
+          ADMIN_EMAIL=admin@example.com
+          ADMIN_PASSWORD=change-me-too
+          JWT_SECRET=ci-jwt-secret
+          EOF
+      - name: Demarrer la stack (4 services healthy)
+        working-directory: docker-mysql
+        run: docker compose up -d --build --wait
+      - name: Tests d'infra
+        run: bash docker-mysql/scripts/infra-tests.sh
+      - name: Cypress (online)
+        uses: cypress-io/github-action@v6
+        with:
+          install: true
+          wait-on: 'http://localhost:3000'
+      - name: Couper le backend (simulation offline)
+        working-directory: docker-mysql
+        run: docker compose stop api db
+      - name: Cypress (offline)
+        uses: cypress-io/github-action@v6
+        with:
+          install: false
+          wait-on: 'http://localhost:3000'
+        env:
+          CYPRESS_offline: true
+
+  # 4) Deploiement du back sur Vercel (uniquement sur push main).
+  deploy-back:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: e2e
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm install --global vercel@latest
+      - run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+      - run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+      - run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+  # 5) Deploiement du front sur GitHub Pages (apres le back).
+  deploy-front:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: deploy-back
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+      - run: npm ci
+      - name: Build du front (URL de l'API Vercel injectee au build)
+        run: npm run build
+        env:
+          REACT_APP_API_URL: ${{ secrets.REACT_APP_API_URL }}
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: build
+      - id: deployment
+        uses: actions/deploy-pages@v4

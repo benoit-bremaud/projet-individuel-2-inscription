@@ -88,7 +88,7 @@ export function validateForm(form) {
 export function App() {
   const [form, setForm] = useState(EMPTY_FORM);
   const [errors, setErrors] = useState({});
-  const [count, setCount] = useState(0);
+  const [registrants, setRegistrants] = useState([]);
   const [successVisible, setSuccessVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
   // Bumped on every error so the auto-hide timer restarts even when the error
@@ -102,13 +102,17 @@ export function App() {
   const [loginPassword, setLoginPassword] = useState('');
   const [adminList, setAdminList] = useState([]);
 
-  // Charge le nombre d'inscrits depuis l'API au montage.
-  useEffect(() => {
+  // Charge la liste publique reduite depuis l'API au montage.
+  const loadPublicList = () =>
     fetchRegistrants()
-      .then((registrants) => setCount(registrants.length))
+      .then(setRegistrants)
       .catch(() => {
-        // Erreur reseau au chargement : on garde le compteur a 0.
+        // Erreur reseau au chargement : on garde une liste vide.
       });
+
+  useEffect(() => {
+    loadPublicList();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -146,7 +150,10 @@ export function App() {
 
     try {
       await createRegistrant(form);
-      setCount((current) => current + 1);
+      setRegistrants((current) => [
+        ...current,
+        { nom: form.nom, prenom: form.prenom, ville: form.ville },
+      ]);
       setForm(EMPTY_FORM);
       setErrorMessage(null);
       setSuccessVisible(true);
@@ -199,8 +206,8 @@ export function App() {
   const handleDelete = async (id) => {
     try {
       await deleteRegistrant(id, token);
-      setCount((current) => Math.max(0, current - 1));
       loadAdminList(token);
+      loadPublicList();
     } catch {
       showError(NETWORK_ERROR);
     }
@@ -266,7 +273,16 @@ export function App() {
         </button>
       </form>
 
-      <p>{count} inscrit(s)</p>
+      <p>{registrants.length} inscrit(s)</p>
+
+      <ul className="public-list">
+        {registrants.map((inscrit, index) => (
+          <li key={index}>
+            {inscrit.nom} {inscrit.prenom}
+            {inscrit.ville ? ` (${inscrit.ville})` : ''}
+          </li>
+        ))}
+      </ul>
 
       <section className="admin">
         {!token && !showLogin && (

@@ -3,6 +3,23 @@
 Journal de bord chronologique (entrée la plus récente en haut), en complément de
 `git log`.
 
+## 2026-06-18 — Étapes A et B : app dockerisée + tests
+
+- **Étape A (PR #2, mergée)** : app full-stack dockerisée. Backend FastAPI partagé
+  `backend/app/` (POST/GET `/inscrits`, GET `/inscrits/admin`, POST `/auth/login`,
+  DELETE) avec seed admin bcrypt au boot (UPSERT idempotent) et JWT HS256. Front React
+  repointé sur `/inscrits` + espace admin (login, liste complète, suppression).
+  Migrations SQL (`utilisateur` étendue date_naissance/ville/code_postal + table
+  `admin`). Stack Docker 4 services healthy (projet `projet-ind-2-inscription`). Tests
+  Jest à jour (43 verts).
+- **Étape B (branche `test/projet-ind-2-tests`)** : tests back pytest (UT bcrypt/JWT/
+  schemas + IT endpoints contre une base de test `ynov_ci_test`, couverture `--cov`) ;
+  Cypress online/offline (`Cypress.env('offline')`) ; tests d'infra
+  `docker-mysql/scripts/infra-tests.sh` (4 conteneurs healthy + smoke HTTP). Liste
+  publique réduite affichée dans le front. Port 3306 exposé pour les IT.
+- **Reste** : étape C (pipeline CI/CD orchestrée + déploiement Pages/Vercel/AlwaysData,
+  « le tout fonctionnel en ligne »).
+
 ## 2026-06-18 — Phase 0 UML terminée, PR docs ouverte
 
 - Diagrammes complétés sous `docs/architecture/diagrams/inscription/` : `05-class.md`

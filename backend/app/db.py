@@ -15,7 +15,7 @@ def get_connection():
     settings = get_settings()
     return mysql.connector.connect(
         host=settings.mysql_host,
-        port=3306,
+        port=settings.mysql_port,
         database=settings.mysql_database,
         user=settings.mysql_user,
         password=settings.mysql_password,

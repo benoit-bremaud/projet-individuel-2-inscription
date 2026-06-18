@@ -14,6 +14,7 @@ class Settings:
 
     def __init__(self) -> None:
         self.mysql_host = os.getenv("MYSQL_HOST", "db")
+        self.mysql_port = int(os.getenv("MYSQL_PORT", "3306"))
         self.mysql_database = os.getenv("MYSQL_DATABASE", "ynov_ci")
         self.mysql_user = os.getenv("MYSQL_USER", "root")
         self.mysql_password = os.getenv("MYSQL_PASSWORD", "")
