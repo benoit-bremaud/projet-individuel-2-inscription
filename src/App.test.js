@@ -217,6 +217,21 @@ describe('sad path', () => {
       expect(screen.getByText('0 inscrit(s)')).toBeInTheDocument();
     });
 
+    test('shows a duplicate-email error toast when the API returns 409', async () => {
+      createRegistrant.mockRejectedValueOnce({ response: { status: 409 } });
+
+      await renderApp();
+      fillFormWithValidValues();
+
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: /s'inscrire/i }));
+      });
+
+      const toast = screen.getByRole('alert');
+      expect(toast).toHaveClass('toast--error');
+      expect(toast).toHaveTextContent(/déjà inscrit/i);
+    });
+
     test('keeps the count at 0 when the mount fetch fails', async () => {
       fetchRegistrants.mockRejectedValueOnce(new Error('Network Error'));
 

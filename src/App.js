@@ -40,6 +40,7 @@ export const ERROR_MESSAGES = {
 const TOAST_DURATION_MS = 3000;
 const VALIDATION_ERROR = 'Le formulaire contient des erreurs.';
 const NETWORK_ERROR = 'Erreur reseau, reessayez plus tard.';
+const DUPLICATE_ERROR = 'Cet email est déjà inscrit.';
 const LOGIN_ERROR = 'Identifiants invalides.';
 const TOKEN_KEY = 'adminToken';
 
@@ -157,8 +158,9 @@ export function App() {
       setForm(EMPTY_FORM);
       setErrorMessage(null);
       setSuccessVisible(true);
-    } catch {
-      showError(NETWORK_ERROR);
+    } catch (error) {
+      // 409 = email deja inscrit (contrainte d'unicite cote API), sinon erreur reseau.
+      showError(error?.response?.status === 409 ? DUPLICATE_ERROR : NETWORK_ERROR);
     }
   };
 
