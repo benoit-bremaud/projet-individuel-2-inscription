@@ -50,3 +50,26 @@ def test_require_admin_rejects_invalid_token():
     with pytest.raises(HTTPException) as exc:
         require_admin(creds)
     assert exc.value.status_code == 401
+
+
+# --- Edge cases : jeton expire et jeton signe avec un mauvais secret ---
+def test_require_admin_rejects_expired_token():
+    from datetime import datetime, timedelta, timezone
+
+    expired = jwt.encode(
+        {"sub": "admin@example.com", "exp": datetime.now(timezone.utc) - timedelta(minutes=1)},
+        os.environ["JWT_SECRET"],
+        algorithm="HS256",
+    )
+    creds = HTTPAuthorizationCredentials(scheme="Bearer", credentials=expired)
+    with pytest.raises(HTTPException) as exc:
+        require_admin(creds)
+    assert exc.value.status_code == 401
+
+
+def test_require_admin_rejects_token_signed_with_wrong_secret():
+    forged = jwt.encode({"sub": "admin@example.com"}, "mauvais-secret", algorithm="HS256")
+    creds = HTTPAuthorizationCredentials(scheme="Bearer", credentials=forged)
+    with pytest.raises(HTTPException) as exc:
+        require_admin(creds)
+    assert exc.value.status_code == 401

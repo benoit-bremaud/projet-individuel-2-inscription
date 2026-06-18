@@ -2,6 +2,8 @@
 
 import os
 
+import pytest
+
 ADMIN_EMAIL = os.environ["ADMIN_EMAIL"]
 ADMIN_PASSWORD = os.environ["ADMIN_PASSWORD"]
 
@@ -87,3 +89,61 @@ def test_delete_protected_and_not_found(client):
     assert client.delete(f"/inscrits/{new_id}", headers=headers).status_code == 204
     # Deja supprime : introuvable.
     assert client.delete(f"/inscrits/{new_id}", headers=headers).status_code == 404
+
+
+# --- Sad path : corps invalide -> 422 ---
+def test_create_missing_field_returns_422(client):
+    payload = _payload()
+    del payload["email"]
+    assert client.post("/inscrits", json=payload).status_code == 422
+
+
+@pytest.mark.parametrize(
+    "field,value",
+    [
+        ("nom", "Jean123"),
+        ("prenom", "Marie@"),
+        ("ville", "Paris1"),
+        ("codePostal", "123"),
+        ("dateNaissance", "pas-une-date"),
+    ],
+)
+def test_create_rejects_invalid_field_returns_422(client, field, value):
+    assert client.post("/inscrits", json=_payload(**{field: value})).status_code == 422
+
+
+# --- Edge : la liste publique ne fuite jamais de PII ---
+def test_public_list_never_exposes_pii(client):
+    client.post("/inscrits", json=_payload())
+    row = client.get("/inscrits").json()[0]
+    assert set(row.keys()) == {"nom", "prenom", "ville"}
+
+
+# --- Happy path : la suppression retire bien l'inscrit de la liste ---
+def test_delete_actually_removes_from_public_list(client):
+    client.post("/inscrits", json=_payload(email="premier@example.com"))
+    second_id = client.post("/inscrits", json=_payload(email="second@example.com")).json()["id"]
+    headers = {"Authorization": f"Bearer {_token(client)}"}
+
+    assert client.delete(f"/inscrits/{second_id}", headers=headers).status_code == 204
+    assert len(client.get("/inscrits").json()) == 1
+
+
+# --- Sad path : authentification ---
+def test_login_wrong_email_returns_401(client):
+    response = client.post("/auth/login", json={"email": "inconnu@example.com", "password": "x"})
+    assert response.status_code == 401
+
+
+def test_login_missing_password_returns_422(client):
+    assert client.post("/auth/login", json={"email": ADMIN_EMAIL}).status_code == 422
+
+
+def test_admin_list_rejects_garbage_token(client):
+    response = client.get("/inscrits/admin", headers={"Authorization": "Bearer jeton-bidon"})
+    assert response.status_code == 401
+
+
+def test_delete_rejects_garbage_token(client):
+    response = client.delete("/inscrits/1", headers={"Authorization": "Bearer jeton-bidon"})
+    assert response.status_code == 401

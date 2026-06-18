@@ -36,3 +36,63 @@ def test_inscrit_create_rejects_invalid_field(field, value):
     payload = {**VALID, field: value}
     with pytest.raises(ValidationError):
         InscritCreate(**payload)
+
+
+# --- Edge cases : noms valides particuliers (accents, trait d'union, apostrophe, espace) ---
+@pytest.mark.parametrize(
+    "field,value",
+    [
+        ("nom", "Jean-Pierre"),
+        ("prenom", "O'Brien"),
+        ("nom", "Étienne"),
+        ("ville", "Aix en Provence"),
+        ("ville", "L'Haÿ-les-Roses"),
+    ],
+)
+def test_inscrit_create_accepts_special_names(field, value):
+    InscritCreate(**{**VALID, field: value})
+
+
+# --- Edge cases : bornes acceptees ---
+@pytest.mark.parametrize(
+    "field,value",
+    [
+        ("codePostal", "00000"),          # 5 chiffres avec zeros
+        ("email", "a@b.co"),              # email minimal valide
+        ("dateNaissance", "2000-02-29"),  # annee bissextile
+    ],
+)
+def test_inscrit_create_accepts_edge_valid(field, value):
+    InscritCreate(**{**VALID, field: value})
+
+
+# --- Edge cases : bornes refusees ---
+@pytest.mark.parametrize(
+    "field,value",
+    [
+        ("codePostal", "1234"),           # 4 chiffres
+        ("codePostal", "123456"),         # 6 chiffres
+        ("email", "a@b"),                 # pas de point
+        ("email", "a @b.co"),             # espace
+        ("dateNaissance", "1990-13-01"),  # mois invalide
+        ("dateNaissance", "2001-02-29"),  # 29 fevrier non bissextile
+    ],
+)
+def test_inscrit_create_rejects_edge_invalid(field, value):
+    with pytest.raises(ValidationError):
+        InscritCreate(**{**VALID, field: value})
+
+
+# --- Sad path : champ manquant ou vide ---
+def test_inscrit_create_rejects_missing_field():
+    payload = {key: value for key, value in VALID.items() if key != "email"}
+    with pytest.raises(ValidationError):
+        InscritCreate(**payload)
+
+
+@pytest.mark.parametrize(
+    "field", ["nom", "prenom", "email", "ville", "codePostal", "dateNaissance"]
+)
+def test_inscrit_create_rejects_empty_string(field):
+    with pytest.raises(ValidationError):
+        InscritCreate(**{**VALID, field: ""})
