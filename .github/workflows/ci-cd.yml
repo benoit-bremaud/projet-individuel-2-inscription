@@ -128,6 +128,8 @@ jobs:
         with:
           node-version: 20.x
       - run: npm ci
+      # Genere la doc jsdoc dans public/docs pour qu'elle soit incluse au build CRA.
+      - run: npm run jsdoc
       - name: Build du front (URL de l'API Vercel injectee au build)
         run: npm run build
         env:
