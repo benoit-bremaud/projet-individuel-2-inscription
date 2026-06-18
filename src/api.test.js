@@ -103,6 +103,12 @@ describe('api', () => {
         headers: { Authorization: 'Bearer jwt-token' },
       });
     });
+
+    it("propage l'erreur en cas d'echec", async () => {
+      axios.get.mockRejectedValueOnce(new Error('Network Error'));
+
+      await expect(fetchRegistrantsAdmin('jwt-token')).rejects.toThrow('Network Error');
+    });
   });
 
   describe('deleteRegistrant', () => {
