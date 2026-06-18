@@ -1,16 +1,19 @@
+/* Theme "Retro Diner" repris du projet breakfast-battle :
+   polices Monoton / Bungee / Fredoka, palette cerise / teal / creme / moutarde / encre,
+   bordures epaisses, grosses ombres portees dures, formes pilule. */
+@import url('https://fonts.googleapis.com/css2?family=Monoton&family=Bungee&family=Fredoka:wght@400;500;600;700&display=swap');
+
 :root {
-  --bg-1: #6366f1;
-  --bg-2: #8b5cf6;
-  --bg-3: #ec4899;
-  --surface: rgba(255, 255, 255, 0.86);
-  --text: #1e293b;
-  --muted: #64748b;
-  --accent: #6366f1;
-  --danger: #ef4444;
-  --success: #22c55e;
-  --radius: 18px;
-  --shadow: 0 14px 40px rgba(2, 6, 23, 0.18);
-  --font: system-ui, 'Segoe UI', -apple-system, 'Helvetica Neue', sans-serif;
+  --cherry: #e23048;
+  --cherry-deep: #b01030;
+  --teal: #0fb5a4;
+  --teal-deep: #0a8678;
+  --cream: #fff4e0;
+  --cream-2: #ffe9c7;
+  --mustard: #ffb627;
+  --ink: #20131a;
+  --shadow: 7px 9px 0 rgba(32, 19, 26, 0.82);
+  --shadow-sm: 0 5px 0 rgba(32, 19, 26, 0.72);
 }
 
 * {
@@ -20,43 +23,44 @@
 body {
   margin: 0;
   min-height: 100vh;
-  font-family: var(--font);
-  color: var(--text);
-  background: linear-gradient(135deg, var(--bg-1), var(--bg-2) 50%, var(--bg-3));
-  background-attachment: fixed;
+  font-family: 'Fredoka', sans-serif;
+  color: var(--ink);
+  background: #2a1620;
 }
 
 .App {
-  max-width: 580px;
+  max-width: 600px;
   margin: 0 auto;
-  padding: 44px 20px 72px;
+  padding: 32px 18px 64px;
   text-align: center;
 }
 
 .App > h1 {
-  color: #fff;
-  font-size: 2.5rem;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  margin: 0 0 28px;
-  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.22);
+  font-family: 'Monoton', cursive;
+  font-weight: 400;
+  font-size: 3rem;
+  letter-spacing: 2px;
+  color: #ff5a72;
+  margin: 8px 0 30px;
+  text-shadow:
+    0 0 6px rgba(226, 48, 72, 0.7),
+    0 0 18px rgba(226, 48, 72, 0.45);
 }
 
 form,
 .admin-login,
 .admin-panel {
-  background: var(--surface);
-  backdrop-filter: blur(14px);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  border-radius: var(--radius);
+  background: var(--cream);
+  border: 3px solid var(--ink);
+  border-radius: 18px;
   box-shadow: var(--shadow);
-  padding: 28px 24px;
+  padding: 26px 22px;
   text-align: left;
 }
 
 form {
   display: grid;
-  gap: 15px;
+  gap: 14px;
 }
 
 form > div {
@@ -66,49 +70,48 @@ form > div {
 
 label {
   margin-bottom: 6px;
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: var(--muted);
+  font-family: 'Bungee', cursive;
+  font-size: 0.7rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
+  color: var(--cherry-deep);
 }
 
 input {
-  padding: 12px 14px;
-  border: 1.5px solid #e2e8f0;
-  border-radius: 11px;
+  padding: 11px 14px;
+  font-family: 'Fredoka', sans-serif;
   font-size: 1rem;
   background: #fff;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  border: 3px solid var(--ink);
+  border-radius: 12px;
+  transition: box-shadow 0.12s ease;
 }
 
 input:focus {
   outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.16);
+  box-shadow: 4px 4px 0 var(--teal);
 }
 
 button {
   cursor: pointer;
-  font-family: inherit;
-  font-weight: 700;
-  font-size: 0.95rem;
-  padding: 12px 22px;
-  border: none;
+  font-family: 'Bungee', cursive;
+  font-size: 0.92rem;
+  color: var(--ink);
+  background: var(--mustard);
+  border: 4px solid var(--ink);
   border-radius: 999px;
-  color: #fff;
-  background: linear-gradient(135deg, var(--accent), var(--bg-2));
-  box-shadow: 0 6px 18px rgba(99, 102, 241, 0.38);
-  transition: transform 0.12s, box-shadow 0.12s, opacity 0.12s;
+  padding: 13px 26px;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.1s ease;
 }
 
 button:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 26px rgba(99, 102, 241, 0.48);
+  background: #ffc24d;
 }
 
 button:active:not(:disabled) {
-  transform: translateY(0);
+  transform: translateY(4px);
+  box-shadow: 0 1px 0 rgba(32, 19, 26, 0.72);
 }
 
 button:disabled {
@@ -117,19 +120,28 @@ button:disabled {
   box-shadow: none;
 }
 
+form > button[type='submit'] {
+  background: var(--teal);
+  color: var(--cream);
+}
+
+form > button[type='submit']:hover:not(:disabled) {
+  background: var(--teal-deep);
+}
+
 .error {
   display: block;
   margin-top: 5px;
-  font-size: 0.8rem;
   font-weight: 600;
-  color: var(--danger);
+  font-size: 0.8rem;
+  color: var(--cherry-deep);
 }
 
 .App > p {
-  margin-top: 30px;
-  color: #fff;
-  font-weight: 600;
-  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.18);
+  margin-top: 28px;
+  font-family: 'Bungee', cursive;
+  font-size: 0.92rem;
+  color: var(--cream);
 }
 
 .public-list {
@@ -137,121 +149,122 @@ button:disabled {
   margin: 14px 0 0;
   padding: 0;
   display: grid;
-  gap: 9px;
+  gap: 10px;
 }
 
 .public-list li {
-  padding: 13px 18px;
-  border-radius: 13px;
-  font-weight: 500;
-  background: var(--surface);
-  backdrop-filter: blur(8px);
-  box-shadow: 0 5px 14px rgba(2, 6, 23, 0.1);
-  animation: rise 0.3s ease;
+  padding: 12px 16px;
+  font-weight: 600;
+  background: var(--cream-2);
+  border: 3px solid var(--ink);
+  border-radius: 14px;
+  box-shadow: 5px 6px 0 rgba(32, 19, 26, 0.82);
+  animation: pop 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.3) both;
 }
 
 .admin {
-  margin-top: 36px;
+  margin-top: 34px;
 }
 
 .admin-login {
   display: grid;
-  gap: 13px;
+  gap: 12px;
 }
 
 .admin-panel h2,
 .admin-login h2 {
   margin-top: 0;
-  letter-spacing: -0.01em;
+  font-family: 'Bungee', cursive;
+  font-size: 1.1rem;
+  color: var(--cherry);
 }
 
 table {
   width: 100%;
   margin-top: 16px;
-  border-collapse: collapse;
-  font-size: 0.85rem;
-  overflow: hidden;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.82rem;
+  border: 3px solid var(--ink);
   border-radius: 12px;
+  overflow: hidden;
 }
 
 th,
 td {
-  padding: 10px 12px;
+  padding: 9px 11px;
   text-align: left;
+  border-bottom: 2px solid rgba(32, 19, 26, 0.15);
 }
 
 thead th {
-  background: var(--accent);
-  color: #fff;
-  font-size: 0.7rem;
+  font-family: 'Bungee', cursive;
+  font-size: 0.6rem;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
+  background: var(--cherry);
+  color: var(--cream);
 }
 
 tbody tr:nth-child(even) {
-  background: rgba(99, 102, 241, 0.07);
+  background: var(--cream-2);
 }
 
 tbody td button {
-  padding: 6px 13px;
-  font-size: 0.78rem;
-  background: linear-gradient(135deg, var(--danger), #f97316);
-  box-shadow: none;
+  padding: 6px 12px;
+  font-size: 0.68rem;
+  border-width: 3px;
+  background: var(--cherry);
+  color: var(--cream);
+}
+
+tbody td button:hover:not(:disabled) {
+  background: var(--cherry-deep);
 }
 
 .toast {
   position: fixed;
-  top: 24px;
-  right: 24px;
+  top: 22px;
+  right: 22px;
   z-index: 1000;
-  padding: 14px 22px;
-  border-radius: 13px;
-  color: #fff;
-  font-weight: 700;
-  background: linear-gradient(135deg, var(--success), #16a34a);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
-  animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 13px 20px;
+  font-family: 'Bungee', cursive;
+  font-size: 0.82rem;
+  color: var(--cream);
+  background: var(--teal);
+  border: 3px solid var(--ink);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  animation: pop 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.3) both;
 }
 
 .toast--error {
-  background: linear-gradient(135deg, var(--danger), #dc2626);
+  background: var(--cherry);
 }
 
 .app-footer {
-  margin-top: 36px;
+  margin-top: 34px;
 }
 
 .app-footer a {
-  color: #fff;
-  font-weight: 600;
+  font-family: 'Bungee', cursive;
+  font-size: 0.72rem;
+  color: var(--mustard);
   text-decoration: none;
-  opacity: 0.9;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.5);
 }
 
 .app-footer a:hover {
-  opacity: 1;
+  color: #ffc24d;
 }
 
-@keyframes slideIn {
+@keyframes pop {
   from {
     opacity: 0;
-    transform: translateX(40px);
+    transform: translateY(14px) scale(0.96);
   }
   to {
     opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes rise {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+    transform: none;
   }
 }
 
