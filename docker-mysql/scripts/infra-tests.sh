@@ -18,7 +18,7 @@ for service in "${SERVICES[@]}"; do
   fi
 done
 
-http_code() { curl -s -o /dev/null -w '%{http_code}' "$1"; }
+http_code() { curl -s --max-time 10 -o /dev/null -w '%{http_code}' "$1"; }
 
 check_code() {
   local url="$1" expected="$2" got
@@ -37,7 +37,7 @@ check_code "http://localhost:3000" 200            # front React
 check_code "http://localhost:8080" 200            # Adminer
 
 echo "== POST /inscrits ne renvoie jamais de 5xx =="
-post_code=$(curl -s -o /dev/null -w '%{http_code}' -X POST http://localhost:8000/inscrits \
+post_code=$(curl -s --max-time 10 -o /dev/null -w '%{http_code}' -X POST http://localhost:8000/inscrits \
   -H 'Content-Type: application/json' \
   -d '{"nom":"Infra","prenom":"Test","email":"infra.test@example.com","dateNaissance":"1990-01-01","ville":"Paris","codePostal":"75001"}')
 echo "  POST /inscrits -> $post_code"

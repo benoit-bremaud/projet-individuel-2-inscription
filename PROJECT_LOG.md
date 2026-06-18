@@ -17,8 +17,9 @@ Journal de bord chronologique (entrée la plus récente en haut), en complément
   Cypress online/offline (`Cypress.env('offline')`) ; tests d'infra
   `docker-mysql/scripts/infra-tests.sh` (4 conteneurs healthy + smoke HTTP). Liste
   publique réduite affichée dans le front. Port 3306 exposé pour les IT.
-- **Reste** : étape C (pipeline CI/CD orchestrée + déploiement Pages/Vercel/AlwaysData,
-  « le tout fonctionnel en ligne »).
+- **Étape C (PR #3, cette PR)** : pipeline CI/CD GitHub Actions (UT+IT, infra, e2e
+  Cypress, déploiement back Vercel + front GitHub Pages + images Docker Hub, couverture
+  Codecov). MySQL de prod sur **Aiven** (et non AlwaysData).
 
 ## 2026-06-18 — Phase 0 UML terminée, PR docs ouverte
 

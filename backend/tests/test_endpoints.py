@@ -23,6 +23,7 @@ def _token(client):
     response = client.post(
         "/auth/login", json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD}
     )
+    assert response.status_code == 200
     return response.json()["access_token"]
 
 
