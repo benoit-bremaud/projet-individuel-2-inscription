@@ -23,6 +23,7 @@ beforeEach(() => {
 
 afterEach(() => {
   jest.clearAllMocks();
+  jest.restoreAllMocks();
   sessionStorage.clear();
 });
 
@@ -90,9 +91,10 @@ describe('admin space', () => {
     expect(screen.getByRole('alert')).toHaveTextContent(/identifiants invalides/i);
   });
 
-  test('deletes a registrant from the admin table', async () => {
+  test('deletes a registrant from the admin table (after confirmation)', async () => {
     await logInAsAdmin();
     await screen.findByText('marie.curie@ynov.com');
+    jest.spyOn(window, 'confirm').mockReturnValue(true);
     deleteRegistrant.mockResolvedValue();
     fetchRegistrantsAdmin.mockResolvedValue([]);
 
@@ -100,12 +102,41 @@ describe('admin space', () => {
       fireEvent.click(screen.getByRole('button', { name: /supprimer/i }));
     });
 
+    expect(window.confirm).toHaveBeenCalled();
     expect(deleteRegistrant).toHaveBeenCalledWith(1, 'jwt-token');
+  });
+
+  test('does not delete when the confirmation is dismissed', async () => {
+    await logInAsAdmin();
+    await screen.findByText('marie.curie@ynov.com');
+    jest.spyOn(window, 'confirm').mockReturnValue(false);
+
+    fireEvent.click(screen.getByRole('button', { name: /supprimer/i }));
+
+    expect(deleteRegistrant).not.toHaveBeenCalled();
+    expect(screen.getByText('marie.curie@ynov.com')).toBeInTheDocument();
+  });
+
+  test('shows a green success toast after a confirmed deletion', async () => {
+    await logInAsAdmin();
+    await screen.findByText('marie.curie@ynov.com');
+    jest.spyOn(window, 'confirm').mockReturnValue(true);
+    deleteRegistrant.mockResolvedValue();
+    fetchRegistrantsAdmin.mockResolvedValue([]);
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /supprimer/i }));
+    });
+
+    const toast = await screen.findByText(/suppression réussie/i);
+    expect(toast).toHaveClass('toast');
+    expect(toast).not.toHaveClass('toast--error');
   });
 
   test('shows an error toast when deletion fails', async () => {
     await logInAsAdmin();
     await screen.findByText('marie.curie@ynov.com');
+    jest.spyOn(window, 'confirm').mockReturnValue(true);
     deleteRegistrant.mockRejectedValue(new Error('Network Error'));
 
     await act(async () => {

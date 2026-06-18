@@ -179,15 +179,19 @@ form > button[type='submit']:hover:not(:disabled) {
   color: var(--cherry);
 }
 
-table {
-  width: 100%;
+.table-wrap {
   margin-top: 16px;
-  border-collapse: separate;
-  border-spacing: 0;
-  font-size: 0.82rem;
+  overflow-x: auto;
   border: 3px solid var(--ink);
   border-radius: 12px;
-  overflow: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+table {
+  width: 100%;
+  min-width: 620px;
+  border-collapse: collapse;
+  font-size: 0.82rem;
 }
 
 th,
@@ -265,6 +269,35 @@ tbody td button:hover:not(:disabled) {
   to {
     opacity: 1;
     transform: none;
+  }
+}
+
+/* Responsive : petits ecrans (mobile). Le tableau admin defile horizontalement
+   via .table-wrap, et la mise en page se resserre. */
+@media (max-width: 640px) {
+  .App {
+    padding: 24px 12px 56px;
+  }
+
+  .App > h1 {
+    font-size: 2rem;
+  }
+
+  form,
+  .admin-login,
+  .admin-panel {
+    padding: 20px 15px;
+  }
+
+  button {
+    padding: 11px 18px;
+    font-size: 0.85rem;
+  }
+
+  .toast {
+    top: 14px;
+    right: 14px;
+    left: 14px;
   }
 }
 

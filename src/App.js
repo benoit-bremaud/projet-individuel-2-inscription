@@ -42,6 +42,9 @@ const VALIDATION_ERROR = 'Le formulaire contient des erreurs.';
 const NETWORK_ERROR = 'Erreur reseau, reessayez plus tard.';
 const DUPLICATE_ERROR = 'Cet email est déjà inscrit.';
 const LOGIN_ERROR = 'Identifiants invalides.';
+const SUCCESS_CREATE = 'Inscription réussie !';
+const SUCCESS_DELETE = 'Suppression réussie !';
+const DELETE_CONFIRM = 'Confirmer la suppression de cet inscrit ?';
 const TOKEN_KEY = 'adminToken';
 
 /**
@@ -90,7 +93,7 @@ export function App() {
   const [form, setForm] = useState(EMPTY_FORM);
   const [errors, setErrors] = useState({});
   const [registrants, setRegistrants] = useState([]);
-  const [successVisible, setSuccessVisible] = useState(false);
+  const [successMessage, setSuccessMessage] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
   // Bumped on every error so the auto-hide timer restarts even when the error
   // toast is already visible (repeated failing submits within the duration).
@@ -117,10 +120,10 @@ export function App() {
   }, []);
 
   useEffect(() => {
-    if (!successVisible) return undefined;
-    const timerId = setTimeout(() => setSuccessVisible(false), TOAST_DURATION_MS);
+    if (!successMessage) return undefined;
+    const timerId = setTimeout(() => setSuccessMessage(null), TOAST_DURATION_MS);
     return () => clearTimeout(timerId);
-  }, [successVisible]);
+  }, [successMessage]);
 
   useEffect(() => {
     if (!errorMessage) return undefined;
@@ -133,7 +136,7 @@ export function App() {
   };
 
   const showError = (message) => {
-    setSuccessVisible(false);
+    setSuccessMessage(null);
     setErrorMessage(message);
     setErrorNonce((n) => n + 1);
   };
@@ -157,7 +160,7 @@ export function App() {
       ]);
       setForm(EMPTY_FORM);
       setErrorMessage(null);
-      setSuccessVisible(true);
+      setSuccessMessage(SUCCESS_CREATE);
     } catch (error) {
       // 409 = email deja inscrit (contrainte d'unicite cote API), sinon erreur reseau.
       showError(error?.response?.status === 409 ? DUPLICATE_ERROR : NETWORK_ERROR);
@@ -206,10 +209,15 @@ export function App() {
   };
 
   const handleDelete = async (id) => {
+    if (!window.confirm(DELETE_CONFIRM)) {
+      return;
+    }
     try {
       await deleteRegistrant(id, token);
       loadAdminList(token);
       loadPublicList();
+      setErrorMessage(null);
+      setSuccessMessage(SUCCESS_DELETE);
     } catch {
       showError(NETWORK_ERROR);
     }
@@ -221,9 +229,9 @@ export function App() {
     <div className="App">
       <h1>Inscription</h1>
 
-      {successVisible && (
+      {successMessage && (
         <div role="alert" className="toast">
-          Inscription réussie !
+          {successMessage}
         </div>
       )}
 
@@ -327,7 +335,8 @@ export function App() {
             <button type="button" onClick={handleLogout}>
               Se deconnecter
             </button>
-            <table>
+            <div className="table-wrap">
+              <table>
               <thead>
                 <tr>
                   <th>Nom</th>
@@ -356,7 +365,8 @@ export function App() {
                   </tr>
                 ))}
               </tbody>
-            </table>
+              </table>
+            </div>
           </div>
         )}
       </section>
