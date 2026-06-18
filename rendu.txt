@@ -1,0 +1,26 @@
+Projet Individuel 2 - Inscription (Ynov M1 CI/CD)
+Auteur : Benoit Bremaud
+
+Repository GitHub :
+https://github.com/benoit-bremaud/projet-individuel-2-inscription
+
+Frontend deploye (GitHub Pages) :
+https://benoit-bremaud.github.io/projet-individuel-2-inscription/
+
+Backend deploye (Vercel) :
+https://projet-individuel-2-inscription.vercel.app
+
+Image Docker du frontend (Docker Hub) :
+https://hub.docker.com/r/beniot/projet-ind-2-inscription-frontend
+
+Image Docker du backend (Docker Hub) :
+https://hub.docker.com/r/beniot/projet-ind-2-inscription-backend
+
+Couverture des tests (Codecov) :
+https://app.codecov.io/gh/benoit-bremaud/projet-individuel-2-inscription
+
+Comptes / identifiants :
+- Administrateur (seede au fresh init de la base via variables d'environnement) :
+  email    : loise.fenoll@ynov.com
+  password : PvdrTAzTeR247sDnAZBr
+- Base MySQL de production : Aiven (TLS requis)
